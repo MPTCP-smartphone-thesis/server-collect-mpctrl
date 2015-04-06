@@ -19,9 +19,47 @@
 #  MA 02110-1301, USA.
 
 import argparse
+import cgi
+import http.server
+import json
+import re
+import socketserver
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
 parser.add_argument("ip", help="IP address used by the server")
-parser.add_argument("port", help="port the server will listen to")
+parser.add_argument("port", type=int, help="port the server will listen to")
 
 args = parser.parse_args()
+
+class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        if None != re.search('/startup', self.path):
+            ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+            if ctype == 'application/json':
+                length = int(self.headers.get('content-length'))
+                data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+                print(data)
+
+            self.send_response(200)
+            self.end_headers()
+        elif None != re.search('/change', self.path):
+            ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+            if ctype == 'application/json':
+                length = int(self.headers.get('content-length'))
+                data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+                print(data)
+
+            self.send_response(200)
+            self.end_headers()
+        else:
+            self.send_response(403)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(bytes(json.dumps({3: 4}), 'UTF-8'))
+
+        return
+
+Handler = HTTPRequestHandler
+
+httpd = socketserver.TCPServer((args.ip, args.port), Handler)
+httpd.serve_forever()
