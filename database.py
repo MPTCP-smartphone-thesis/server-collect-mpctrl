@@ -31,6 +31,9 @@ args = parser.parse_args()
 
 WIFIMAC = "wifiMac"
 DATA = "data"
+STARTUP_KEYS = ["timestamp", "versionName", "versionCode", "lastUpdate", "enable", "defRouteCell", "cellBackup",
+                "saveBattery", "ipv6", "TCPCCAlgo"]
+HANDOVER_KEYS = ["timestamp"]
 
 
 class Database(object):
@@ -43,37 +46,36 @@ class Database(object):
 
     def insert(self, data, collection):
         ret = collection.insert(data)
-        return (ret != None and ret != [None])
+        return (ret is not None and ret != [None])
+
+    def insert_in_collection(self, dico, collection, keys_collection):
+        """ Returns the number of elements inserted in db
+            If there is an error with insertion of one element, stop inserting following ones
+        """
+        wifimac = dico.get(WIFIMAC, None)
+        if not wifimac:
+            return 0
+        count = 0
+        for data in dico.get(DATA, []):
+            if not set(data.keys()).issubset(set(keys_collection)):
+                return count
+            data[WIFIMAC] = wifimac
+            if not self.insert(data, collection):
+                return count
+            count += 1
+        return count
 
     def insert_startup(self, dico):
         """ Returns the number of elements inserted in db
             If there is an error with insertion of one element, stop inserting following ones
         """
-        wifimac = dico.get(WIFIMAC, None)
-        if not wifimac:
-            return 0
-        count = 0
-        for data in dico.get(DATA, []):
-            data[WIFIMAC] = wifimac
-            if not self.insert(data, db.startup):
-                return count
-            count += 1
-        return count
+        self.insert_in_collection(dico, self.db.startup, STARTUP_KEYS)
 
     def insert_handover(self, dico):
         """ Returns the number of elements inserted in db
             If there is an error with insertion of one element, stop inserting following ones
         """
-        wifimac = dico.get(WIFIMAC, None)
-        if not wifimac:
-            return 0
-        count = 0
-        for data in dico.get(DATA, []):
-            data[WIFIMAC] = wifimac
-            if not self.insert(data, db.handover):
-                return count
-            count += 1
-        return count
+        self.insert_in_collection(dico, self.db.handover, HANDOVER_KEYS)
 
 
 db = Database(args.ip, args.port, args.db_name)
