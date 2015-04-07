@@ -31,9 +31,9 @@ args = parser.parse_args()
 
 WIFIMAC = "wifiMac"
 DATA = "data"
-STARTUP_KEYS = ["timestamp", "versionName", "versionCode", "lastUpdate", "enable", "defRouteCell", "cellBackup",
-                "saveBattery", "ipv6", "TCPCCAlgo"]
-HANDOVER_KEYS = ["timestamp"]
+STARTUP_KEYS = ["wifiMac", "timestamp", "versionName", "versionCode", "lastUpdate", "enable", "defRouteCell",
+                "cellBackup", "saveBattery", "ipv6", "TCPCCAlgo"]
+HANDOVER_KEYS = ["wifiMac", "timestamp"]
 
 
 class Database(object):
@@ -48,34 +48,18 @@ class Database(object):
         ret = collection.insert(data)
         return (ret is not None and ret != [None])
 
-    def insert_in_collection(self, dico, collection, keys_collection):
-        """ Returns the number of elements inserted in db
-            If there is an error with insertion of one element, stop inserting following ones
+    def insert_in_collection(self, dico, collection, collection_keys):
+        """ Returns True iff the element is inserted in db
         """
-        wifimac = dico.get(WIFIMAC, None)
-        if not wifimac:
-            return 0
-        count = 0
-        for data in dico.get(DATA, []):
-            if not set(data.keys()).issubset(set(keys_collection)):
-                return count
-            data[WIFIMAC] = wifimac
-            if not self.insert(data, collection):
-                return count
-            count += 1
-        return count
+        if not set(dico.keys()).issubset(set(collection_keys)):
+            return False
+        return self.insert(dico, collection)
 
     def insert_startup(self, dico):
-        """ Returns the number of elements inserted in db
-            If there is an error with insertion of one element, stop inserting following ones
-        """
-        self.insert_in_collection(dico, self.db.startup, STARTUP_KEYS)
+        return self.insert_in_collection(dico, self.db.startup, STARTUP_KEYS)
 
     def insert_handover(self, dico):
-        """ Returns the number of elements inserted in db
-            If there is an error with insertion of one element, stop inserting following ones
-        """
-        self.insert_in_collection(dico, self.db.handover, HANDOVER_KEYS)
+        return self.insert_in_collection(dico, self.db.handover, HANDOVER_KEYS)
 
 
 db = Database(args.ip, args.port, args.db_name)
