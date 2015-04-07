@@ -22,22 +22,49 @@ import argparse
 import database
 import cgi
 import http.server
-import json
 import re
 import socketserver
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
 parser.add_argument("ip", help="IP address used by the server")
 parser.add_argument("port", type=int, help="port the server will listen to")
+parser.add_argument("ip-db", help="IP address used by MongoDB")
+parser.add_argument("port-db", type=int, help="port the db listen to")
+parser.add_argument("db-name", help="name of the database to connect to")
 
 args = parser.parse_args()
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def convert_value(v):
+    if is_number(v):
+        return float(v)
+    elif v.startswith("[") and v.endswith("]"):
+        v_list = []
+        elements = v[1:-1].split(",")
+        for element in elements:
+            v_list.append(convert_value(element))
+        return v_list
+    elif v.lower() == "true":
+        return True
+    elif v.lower() == "false":
+        return False
+    else:
+        return v
 
 
 def convert(data):
     ret = {}
     for k, v in data.items():
         k_dec = k.decode()
-        v_dec = v[0].decode()
+        v_dec = convert_value(v[0].decode())
         ret[k_dec] = v_dec
     return ret
 
@@ -62,7 +89,6 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 length = int(self.headers.get('content-length'))
                 data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
                 data = convert(data)
-                print(data)
                 if db.insert_handover(data):
                     self.send_response(200)
                     self.end_headers()
@@ -73,12 +99,11 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(403)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(bytes(json.dumps({3: 4}), 'UTF-8'))
-
+            # self.wfile.write(bytes(json.dumps({3: 4}), 'UTF-8'))
         return
 
 Handler = HTTPRequestHandler
 
 httpd = socketserver.TCPServer((args.ip, args.port), Handler)
-db = database.Database("127.0.0.1", 27017, "test")
+db = database.Database(args.ip_db, args.port_db, args.db_name)
 httpd.serve_forever()

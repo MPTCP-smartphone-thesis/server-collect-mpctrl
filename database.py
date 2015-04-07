@@ -47,10 +47,7 @@ class Database(object):
     def insert_in_collection(self, dico, collection, collection_keys):
         """ Returns True iff the element is inserted in db
         """
-        print(set(dico.keys()))
-        print(set(collection_keys))
         if not set(dico.keys()).issubset(set(collection_keys)):
-            print("Bad...")
             return False
         return self.insert(dico, collection)
 
