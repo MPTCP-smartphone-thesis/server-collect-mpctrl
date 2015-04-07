@@ -19,6 +19,7 @@
 #  MA 02110-1301, USA.
 
 import argparse
+import database
 import cgi
 import http.server
 import json
@@ -31,6 +32,16 @@ parser.add_argument("port", type=int, help="port the server will listen to")
 
 args = parser.parse_args()
 
+
+def convert(data):
+    ret = {}
+    for k, v in data.items():
+        k_dec = k.decode()
+        v_dec = v[0].decode()
+        ret[k_dec] = v_dec
+    return ret
+
+
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         if None != re.search('/startup', self.path):
@@ -38,19 +49,26 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
                 data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-                print(data)
-
-            self.send_response(200)
-            self.end_headers()
+                data = convert(data)
+                if db.insert_startup(data):
+                    self.send_response(200)
+                    self.end_headers()
+                else:
+                    self.send_response(403)
+                    self.end_headers()
         elif None != re.search('/handover', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
                 data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+                data = convert(data)
                 print(data)
-
-            self.send_response(200)
-            self.end_headers()
+                if db.insert_handover(data):
+                    self.send_response(200)
+                    self.end_headers()
+                else:
+                    self.send_response(403)
+                    self.end_headers()
         else:
             self.send_response(403)
             self.send_header('Content-Type', 'application/json')
@@ -62,4 +80,5 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 Handler = HTTPRequestHandler
 
 httpd = socketserver.TCPServer((args.ip, args.port), Handler)
+db = database.Database("127.0.0.1", 27017, "test")
 httpd.serve_forever()

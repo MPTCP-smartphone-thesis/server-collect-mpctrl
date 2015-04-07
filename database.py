@@ -27,10 +27,6 @@ parser.add_argument("ip", help="IP address used by the server")
 parser.add_argument("port", type=int, help="port the server will listen to")
 parser.add_argument("db-name", help="name of the database to connect to")
 
-args = parser.parse_args()
-
-WIFIMAC = "wifiMac"
-DATA = "data"
 STARTUP_KEYS = ["wifiMac", "timestamp", "versionName", "versionCode", "lastUpdate", "enable", "defRouteCell",
                 "cellBackup", "saveBattery", "ipv6", "TCPCCAlgo"]
 HANDOVER_KEYS = ["wifiMac", "timestamp"]
@@ -51,7 +47,10 @@ class Database(object):
     def insert_in_collection(self, dico, collection, collection_keys):
         """ Returns True iff the element is inserted in db
         """
+        print(set(dico.keys()))
+        print(set(collection_keys))
         if not set(dico.keys()).issubset(set(collection_keys)):
+            print("Bad...")
             return False
         return self.insert(dico, collection)
 
@@ -61,5 +60,6 @@ class Database(object):
     def insert_handover(self, dico):
         return self.insert_in_collection(dico, self.db.handover, HANDOVER_KEYS)
 
-
-db = Database(args.ip, args.port, args.db_name)
+if __name__ == "__main__":
+    args = parser.parse_args()
+    db = Database(args.ip, args.port, args.db_name)
