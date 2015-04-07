@@ -38,40 +38,6 @@ parser.add_argument("db_name", help="name of the database to connect to")
 args = parser.parse_args()
 
 
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-
-def convert_value(v):
-    if is_number(v):
-        return float(v)
-    elif v.startswith("[") and v.endswith("]"):
-        v_list = []
-        elements = v[1:-1].split(",")
-        for element in elements:
-            v_list.append(convert_value(element))
-        return v_list
-    elif v.lower() == "true":
-        return True
-    elif v.lower() == "false":
-        return False
-    else:
-        return v
-
-
-def convert(data):
-    ret = {}
-    for k, v in data.items():
-        k_dec = k.decode()
-        v_dec = convert_value(v[0].decode())
-        ret[k_dec] = v_dec
-    return ret
-
-
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
 
