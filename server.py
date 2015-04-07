@@ -70,6 +70,7 @@ def convert(data):
         ret[k_dec] = v_dec
     return ret
 
+
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     allow_reuse_address = True
 
@@ -77,16 +78,25 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         self.socket.close()
         http.server.HTTPServer.shutdown(self)
 
+
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+    def get_json_data(self):
+        length = int(self.headers.get('content-length'))
+        data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+        if len(data_raw) > 1:
+            data = convert(data_raw)
+        else:
+            # Needed because byte stream...
+            data_string = list(data_raw.keys())[0].decode()
+            data = json.loads(data_string)
+        return data
+
+
     def do_POST(self):
         if None != re.search('/startup', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
-                length = int(self.headers.get('content-length'))
-                data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-                # Needed because byte stream...
-                data_string = list(data_raw.keys())[0].decode()
-                data = json.loads(data_string)
+                data = self.get_json_data()
                 if db.insert_startup(data):
                     self.send_response(200)
                     self.end_headers()
@@ -96,11 +106,7 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         elif None != re.search('/handover', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
-                length = int(self.headers.get('content-length'))
-                data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-                # Needed because byte stream...
-                data_string = list(data_raw.keys())[0].decode()
-                data = json.loads(data_string)
+                data = self.get_json_data()
                 if db.insert_handover(data):
                     self.send_response(200)
                     self.end_headers()
