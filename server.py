@@ -42,7 +42,7 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
             self.send_response(200)
             self.end_headers()
-        elif None != re.search('/change', self.path):
+        elif None != re.search('/handover', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
