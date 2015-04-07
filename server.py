@@ -79,14 +79,12 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
-        print(self.headers)
         if None != re.search('/startup', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
                 data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
                 # Needed because byte stream...
-                print(data_raw)
                 data_string = list(data_raw.keys())[0].decode()
                 data = json.loads(data_string)
                 if db.insert_startup(data):
