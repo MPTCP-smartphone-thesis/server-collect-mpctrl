@@ -24,13 +24,14 @@ import cgi
 import http.server
 import re
 import socketserver
+import threading
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
 parser.add_argument("ip", help="IP address used by the server")
 parser.add_argument("port", type=int, help="port the server will listen to")
-parser.add_argument("ip-db", help="IP address used by MongoDB")
-parser.add_argument("port-db", type=int, help="port the db listen to")
-parser.add_argument("db-name", help="name of the database to connect to")
+parser.add_argument("ip_db", help="IP address used by MongoDB")
+parser.add_argument("port_db", type=int, help="port the db listen to")
+parser.add_argument("db_name", help="name of the database to connect to")
 
 args = parser.parse_args()
 
@@ -68,6 +69,12 @@ def convert(data):
         ret[k_dec] = v_dec
     return ret
 
+class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    allow_reuse_address = True
+
+    def shutdown(self):
+        self.socket.close()
+        http.server.HTTPServer.shutdown(self)
 
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
@@ -102,8 +109,23 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             # self.wfile.write(bytes(json.dumps({3: 4}), 'UTF-8'))
         return
 
-Handler = HTTPRequestHandler
+class SimpleHttpServer():
+    def __init__(self, ip, port):
+        self.server = ThreadedHTTPServer((ip, port), HTTPRequestHandler)
 
-httpd = socketserver.TCPServer((args.ip, args.port), Handler)
+    def start(self):
+        self.server_thread = threading.Thread(target=self.server.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
+
+    def waitForThread(self):
+        self.server_thread.join()
+
+    def stop(self):
+        self.server.shutdown()
+        self.waitForThread()
+
+server = SimpleHttpServer(args.ip, args.port)
 db = database.Database(args.ip_db, args.port_db, args.db_name)
-httpd.serve_forever()
+server.start()
+server.waitForThread()
