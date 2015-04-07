@@ -26,7 +26,6 @@ import json
 import re
 import socketserver
 import threading
-import urllib
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
 parser.add_argument("ip", help="IP address used by the server")
@@ -52,7 +51,6 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         data_raw = self.rfile.read(length).decode("UTF-8").strip()
         data = json.loads(str(data_raw))
         return data
-
 
     def do_POST(self):
         if None != re.search('/startup', self.path):
@@ -81,6 +79,7 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             # self.wfile.write(bytes(json.dumps({3: 4}), 'UTF-8'))
         return
+
 
 class SimpleHttpServer():
     def __init__(self, ip, port):
