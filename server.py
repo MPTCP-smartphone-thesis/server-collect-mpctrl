@@ -19,13 +19,14 @@
 #  MA 02110-1301, USA.
 
 import argparse
-import database
 import cgi
+import database
 import http.server
 import json
 import re
 import socketserver
 import threading
+import urllib
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
 parser.add_argument("ip", help="IP address used by the server")
@@ -82,13 +83,8 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def get_json_data(self):
         length = int(self.headers.get('content-length'))
-        data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-        if len(data_raw) > 1:
-            data = convert(data_raw)
-        else:
-            # Needed because byte stream...
-            data_string = list(data_raw.keys())[0].decode()
-            data = json.loads(data_string)
+        data_raw = self.rfile.read(length).decode("UTF-8").strip()
+        data = json.loads(str(data_raw))
         return data
 
 
