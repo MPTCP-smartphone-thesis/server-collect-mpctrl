@@ -22,6 +22,7 @@ import argparse
 import database
 import cgi
 import http.server
+import json
 import re
 import socketserver
 import threading
@@ -78,12 +79,16 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
+        print(self.headers)
         if None != re.search('/startup', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
-                data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-                data = convert(data)
+                data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+                # Needed because byte stream...
+                print(data_raw)
+                data_string = list(data_raw.keys())[0].decode()
+                data = json.loads(data_string)
                 if db.insert_startup(data):
                     self.send_response(200)
                     self.end_headers()
@@ -94,8 +99,10 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
             if ctype == 'application/json':
                 length = int(self.headers.get('content-length'))
-                data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
-                data = convert(data)
+                data_raw = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+                # Needed because byte stream...
+                data_string = list(data_raw.keys())[0].decode()
+                data = json.loads(data_string)
                 if db.insert_handover(data):
                     self.send_response(200)
                     self.end_headers()
