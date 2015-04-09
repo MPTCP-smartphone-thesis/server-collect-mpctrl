@@ -12,4 +12,4 @@ RUN git clone https://github.com/MPTCP-smartphone-thesis/server-collect-mpctrl.g
 
 EXPOSE 1234
 
-ENTRYPOINT ["/server-collect-mpctrl/server.py"]
+CMD ["/server-collect-mpctrl/server.py", "-I", "$MONGO_PORT_27017_TCP_ADDR", "-P", "$MONGO_PORT_27017_TCP_PORT"]
