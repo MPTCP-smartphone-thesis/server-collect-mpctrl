@@ -7,7 +7,7 @@ FROM       ubuntu:14.04
 MAINTAINER Matthieu Baerts "matttbe@gmail.com"
 
 # Install pdnsd
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pymongo
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pymongo git
 RUN git clone https://github.com/MPTCP-smartphone-thesis/server-collect-mpctrl.git
 
 EXPOSE 1234
