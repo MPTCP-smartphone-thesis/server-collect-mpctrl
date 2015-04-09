@@ -28,11 +28,11 @@ import socketserver
 import threading
 
 parser = argparse.ArgumentParser(description="HTTP server to collect data from MultiPathControl")
-parser.add_argument("ip", help="IP address used by the server")
-parser.add_argument("port", type=int, help="port the server will listen to")
-parser.add_argument("ip_db", help="IP address used by MongoDB")
-parser.add_argument("port_db", type=int, help="port the db listen to")
-parser.add_argument("db_name", help="name of the database to connect to")
+parser.add_argument("-i", "--ip", help="IP address used by the server", default="0.0.0.0")
+parser.add_argument("-p", "--port", type=int, help="port the server will listen to", default=1234)
+parser.add_argument("-I", "--ip_db", help="IP address used by MongoDB", default="127.0.0.1")
+parser.add_argument("-P", "--port_db", type=int, help="port the db listen to", default=27017)
+parser.add_argument("-N", "--db_name", help="name of the database to connect to", default="mpctrl")
 
 args = parser.parse_args()
 
