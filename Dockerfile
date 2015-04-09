@@ -12,4 +12,4 @@ RUN git clone https://github.com/MPTCP-smartphone-thesis/server-collect-mpctrl.g
 
 EXPOSE 1234
 
-ENTRYPOINT ["/server-collect-mpctrl/server.py"]
+ENTRYPOINT ["/server-collect-mpctrl/server-docker.sh"]
