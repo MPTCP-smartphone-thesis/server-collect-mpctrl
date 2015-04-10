@@ -52,6 +52,17 @@ class HTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         data = json.loads(str(data_raw))
         return data
 
+    def do_GET(self):
+        if None != re.search('/myip', self.path):
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/txt')
+            self.end_headers()
+            self.wfile.write(self.client_address[0].encode("UTF-8"))
+        else:
+            self.send_response(403)
+            self.end_headers()
+        return
+
     def do_POST(self):
         if None != re.search('/startup', self.path):
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
