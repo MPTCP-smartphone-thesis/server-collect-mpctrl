@@ -28,7 +28,7 @@ parser.add_argument("port", type=int, help="port the server will listen to")
 parser.add_argument("db-name", help="name of the database to connect to")
 
 STARTUP_KEYS = ["wifiMac", "timestamp", "versionName", "versionCode", "lastUpdate", "enable", "defRouteCell",
-                "cellBackup", "saveBattery", "ipv6", "TCPCCAlgo"]
+                "cellBackup", "saveBattery", "ipv6", "savePowerGPS", "TCPCCAlgo"]
 HANDOVER_KEYS = ["wifiMac", "timestamp", "airplane", "cellBer", "cellSignal4", "cellSignaldBm",
                 "dataActivity", "dataState", "cellType", "extIp", "gsmCellLac", "gsmFullCellId", "gsmRNC",
                 "gsmShortCellId", "ifaces", "ipWifi4", "ipWifi6", "ipRMNet4", "ipRMNet6", "netstat",
