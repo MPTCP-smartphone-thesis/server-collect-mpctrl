@@ -34,7 +34,7 @@ HANDOVER_KEYS = ["wifiMac", "timestamp", "airplane", "cellBer", "cellSignal4", "
                 "gsmShortCellId", "ifaces", "ipWifi4", "ipWifi6", "ipRMNet4", "ipRMNet6", "netstat",
                 "netAvailable", "netConnected", "netDState", "netExtras", "netFailover", "netReason",
                 "netRoaming", "netType", "posAccuracy", "posLatitude", "posLongitude", "posSpeed",
-                "procMPTCP", "procMPTCPFM", "simOperator", "simState", "wifiBSSID", "wifiFreq",
+                "procMPTCP", "procMPTCPFM", "simOperator", "simState", "tracking", "wifiBSSID", "wifiFreq",
                 "wifiSignal4", "wifiSignalRSSI", "wifiSpeed", "wifiSSID", "wifiState"]
 
 
